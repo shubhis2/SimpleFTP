@@ -47,16 +47,15 @@ public class MyFtpServer extends Thread {
 
           output.writeUTF("1 myftpserver>>  ");
 
-        //  String command = input.readUTF();
-          int j = input.readInt();
-          do {
-            //  output.writeUTF("2 myftpserver>> >> " + command);
-            output.writeUTF("2 myftpserver>> " + j);
+         String command = input.readUTF();
 
-          //    command = input.readUTF();
-          j = input.readInt();
-        //  } while (command != null);
-      } while (j != 0);
+          do {
+              output.writeUTF("2 myftpserver>> >> " + command);
+
+              command = input.readUTF();
+
+      } while (!command.equals("quit"));
+
           output.writeUTF("The End");
           socket.close();
 

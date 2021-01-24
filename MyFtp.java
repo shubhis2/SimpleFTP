@@ -27,18 +27,17 @@ public class MyFtp {
       System.out.println("after Scanner: " + input.readUTF());
 
       String commandIn;
-      int i;
+
       do {
-        System.out.print("\nClient reads commands (int) to send to server:\n");
-        //commandIn = userEntry.nextLine();
-        i = userEntry.nextInt();
+        System.out.print("\nClient reads commands to send to server:\n");
+        commandIn = userEntry.nextLine();
+
         //send command to server
-  //      output.writeUTF(commandIn);
-        output.writeInt(i);
+        output.writeUTF(commandIn);
 
         System.out.println("Back from server: " + input.readUTF());
-//      } while (commandIn != null);
-      } while (i != 0);
+
+      } while (!commandIn.equals("quit"));
     } catch (IOException e) {
       e.printStackTrace();
     }
