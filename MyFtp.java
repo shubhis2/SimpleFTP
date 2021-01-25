@@ -9,6 +9,68 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class MyFtp {
+  private Socket client = null;
+  private DataInputStream input = null;
+  private DataOutputStream output = null;
+
+  // client constructor
+  public MyFtp(String host, int port)
+  {
+    try
+    {
+      client = new Socket(host, port);
+      System.out.println("Connected");
+
+      // input from terminal command nextLine
+      input = new DataInputStream(System.in);
+
+      // send output to the Socket
+      output = new DataOutputStream(client.getOutputStream());
+    }
+    catch(UnknownHostException u)
+    {
+      System.out.println(u);
+    }
+    catch(IOException i)
+    {
+      System.out.println(i);
+    }
+    // string to read message from input
+    String line = "";
+    // read until "quit"
+    while (!line.equals("over"))
+    {
+      try
+      {
+        line = input.readLine(); // read from stdin
+        output.writeUTF(line); // send to server socket
+      }
+      catch(IOException i)
+      {
+        System.out.println(i);
+      }
+    }
+    // close the Connection
+    try
+    {
+      input.close();
+      output.close();
+      client.close();
+    }
+    catch(IOException i)
+    {
+      System.out.println(i);
+    }
+  }
+
+  public static void main(String args[])
+  {
+    String host = args[0];
+    int port = Integer.parseInt(args[1]);
+    MyFtp myftp = new MyFtp(host, port);
+  }
+}
+/*
   public static void main(String[] args) {
 
     Socket client = null;
@@ -54,4 +116,4 @@ public class MyFtp {
       }
     }
   }
-}
+} */
