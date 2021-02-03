@@ -16,7 +16,6 @@ public class MyFtp {
     int port = Integer.parseInt(args[1]);
     try {
       client = new Socket(host, port);
-
       // Set up I/O streams for server communication
       DataInputStream input = new DataInputStream(client.getInputStream());
       DataOutputStream output = new DataOutputStream(client.getOutputStream());

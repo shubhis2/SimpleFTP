@@ -39,7 +39,6 @@ public class MyFtpServer extends Thread {
           System.out.println("Waiting for client on port " + serverSocket.getLocalPort());
           // accept client socket connection
           Socket socket = serverSocket.accept();
-
           System.out.println("Just connected to " + socket.getRemoteSocketAddress());
 
           DataInputStream input = new DataInputStream(socket.getInputStream());
