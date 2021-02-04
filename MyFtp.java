@@ -95,7 +95,7 @@ public class MyFtp {
 					long fileSize = Long.parseLong(br.readLine());
 					File fl = new File(tokens[1]);
 					FileOutputStream f = new FileOutputStream(fl);
-					BufferedReader br1 = new BufferedReader(new InputStreamReader(System.in));
+					/*BufferedReader br1 = new BufferedReader(new InputStreamReader(System.in));
 					if (fl.exists()) {
 						System.out.println("File exist");
 						System.out.println("Overwrite? y/n");
@@ -103,7 +103,7 @@ public class MyFtp {
 						if (option.equals("n")) {
 							continue;
 						}
-						if (option.equals("y")) {
+						if (option.equals("y")) {*/
 							int count = 0;
 							byte[] buffer = new byte[8192];
 							long bytesReceived = 0;
@@ -113,9 +113,9 @@ public class MyFtp {
 								bytesReceived += count;
 							}
 							System.out.println("File received");
-						}
+						//}
 						//br1.close();
-					}
+					//}
 					f.close();
 				}
 
