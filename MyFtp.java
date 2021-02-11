@@ -15,25 +15,22 @@ public class MyFtp {
 	public MyFtp(String hostname, int port) throws Exception {
 			socket = new Socket();
 	    // InetAddress represents both Ipv4 and IPv6 addresses
-				InetAddress inetAddress = InetAddress.getByName(hostname);
-
+			InetAddress inetAddress = InetAddress.getByName(hostname);
 	    // InetSocketAddress constructor creates a socketaddress object (IP addr and port#)
-	    // and binds it to the specified ip (from getHostAddress) and port
+	    // binds it to the specified ip (from getHostAddress) and port
 	    SocketAddress socketAddress = new InetSocketAddress(inetAddress.getHostAddress(), port);
 	    // connect this client socket to the server socket
 			socket.connect(socketAddress);
-
-	    // System.out.println("IP address: "+socket.getInetAddress());
-	    // System.out.println("Port number: "+socket.getLocalPort());
+			System.out.println("Connected to: " + inetAddress);
 	    // get the string representing the client's working directory
 	    String cwd = System.getProperty("user.dir");
 	    // get Path object of current working directory
 	    path = Paths.get(cwd);
-	    System.out.println("Connected to: " + inetAddress);
+
 	}
 
   	/*
-     * Begin client program to connect to server and issue basic ftp commands
+     * Begin client program to connect to server and pass commands to server
      * invoke: MyFtp hostname portnumber
   	 */
   	public static void main(String[] args) {
@@ -55,9 +52,9 @@ public class MyFtp {
 					System.exit(1);
 			}
   		try {
-        // establish connection with server on port
+        // instantiate client to create, bind & connect to server socket
   			MyFtp ftpClient = new MyFtp(args[0], port);
-        // process commands from the client
+        // invoke doCommands to parse commands and send to server
   			ftpClient.doCommands();
   		}
   		catch(SocketTimeoutException ste) {
@@ -78,15 +75,16 @@ public class MyFtp {
 			BufferedReader br=new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			//keyboard input
 			Scanner input = new Scanner(System.in);
-			String command;
+			String cmdLine;
 			String[]tokens;
 			String lineOut;
 
 			do {
 				System.out.print("MyFtp > ");
-    		command = input.nextLine();
+    		cmdLine = input.nextLine();
     		String delimeter=" ";
-    		tokens = command.split(delimeter);
+    		tokens = cmdLine.split(delimeter);
+				// check # args supplied
     		if ((tokens[0].equalsIgnoreCase("ls") || tokens[0].equalsIgnoreCase("pwd") || tokens[0].equalsIgnoreCase("quit")) && tokens.length != 1)
       		System.out.println("Invalid arguments");
     		else if ((tokens[0].equalsIgnoreCase("get")||tokens[0].equalsIgnoreCase("put")||tokens[0].equalsIgnoreCase("delete")||tokens[0].equalsIgnoreCase("mkdir")) && tokens.length != 2)
@@ -99,26 +97,23 @@ public class MyFtp {
 
     		else if (tokens[0].equalsIgnoreCase("get")){
 
-						cout.writeBytes("get " + tokens[1] + "\n");
-
-												//error messages
-												String get_line;
-												if (!(get_line = br.readLine()).equals("")) {
-													System.out.println(get_line);
-													continue;
-												}
-												//get file size
-												long fileSize = Long.parseLong(br.readLine());
-												FileOutputStream f = new FileOutputStream(new File(tokens[1]));
-												int count = 0;
-												byte[] buffer = new byte[8192];
-												long bytesReceived = 0;
-												while(bytesReceived < fileSize) {
-													count = cin.read(buffer);
-													f.write(buffer, 0, count);
-													bytesReceived += count;
-												}
-												f.close();
+							cout.writeBytes("get " + tokens[1] + "\n");
+							String get_line;
+							if (!(get_line = br.readLine()).equals("")) {
+									System.out.println(get_line);
+									continue;
+							}
+							long fileSize = Long.parseLong(br.readLine());
+							FileOutputStream f = new FileOutputStream(new File(tokens[1]));
+							int count = 0;
+							byte[] buffer = new byte[8192];
+							long bytesReceived = 0;
+							while(bytesReceived < fileSize) {
+										count = cin.read(buffer);
+										f.write(buffer, 0, count);
+										bytesReceived += count;
+							}
+							f.close();
 
 				}
 
@@ -222,7 +217,7 @@ public class MyFtp {
 					System.out.println("unrecognized command '" + tokens[0] + "'");
 				}
 
-			} while (!command.equalsIgnoreCase("quit"));
+			} while (!cmdLine.equalsIgnoreCase("quit"));
 			input.close();
 			System.out.println("Client session closing ...");
 		}
