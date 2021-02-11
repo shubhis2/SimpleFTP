@@ -15,25 +15,22 @@ public class MyFtp {
 	public MyFtp(String hostname, int port) throws Exception {
 			socket = new Socket();
 	    // InetAddress represents both Ipv4 and IPv6 addresses
-				InetAddress inetAddress = InetAddress.getByName(hostname);
-
+			InetAddress inetAddress = InetAddress.getByName(hostname);
 	    // InetSocketAddress constructor creates a socketaddress object (IP addr and port#)
-	    // and binds it to the specified ip (from getHostAddress) and port
+	    // binds it to the specified ip (from getHostAddress) and port
 	    SocketAddress socketAddress = new InetSocketAddress(inetAddress.getHostAddress(), port);
 	    // connect this client socket to the server socket
 			socket.connect(socketAddress);
-
-	    // System.out.println("IP address: "+socket.getInetAddress());
-	    // System.out.println("Port number: "+socket.getLocalPort());
+			System.out.println("Connected to: " + inetAddress);
 	    // get the string representing the client's working directory
 	    String cwd = System.getProperty("user.dir");
 	    // get Path object of current working directory
 	    path = Paths.get(cwd);
-	    System.out.println("Connected to: " + inetAddress);
+
 	}
 
   	/*
-     * Begin client program to connect to server and issue basic ftp commands
+     * Begin client program to connect to server and pass commands to server
      * invoke: MyFtp hostname portnumber
   	 */
   	public static void main(String[] args) {
@@ -55,9 +52,9 @@ public class MyFtp {
 					System.exit(1);
 			}
   		try {
-        // establish connection with server on port
+        // instantiate client to create, bind & connect to server socket
   			MyFtp ftpClient = new MyFtp(args[0], port);
-        // process commands from the client
+        // invoke doCommands to parse commands and send to server
   			ftpClient.doCommands();
   		}
   		catch(SocketTimeoutException ste) {
@@ -70,6 +67,11 @@ public class MyFtp {
   			System.out.println("Program unexpected quit");
   		}
   	}
+		/*
+			Send commands to server via cout
+			Send files on cout.  Receive files sent on cin
+			Receive possible error messages on br
+		*/
 
 	public void doCommands() {
 		try {
@@ -78,19 +80,20 @@ public class MyFtp {
 			BufferedReader br=new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			//keyboard input
 			Scanner input = new Scanner(System.in);
-			String command;
+			String cmdLine;
 			String[]tokens;
 			String lineOut;
 
 			do {
 				System.out.print("MyFtp > ");
-    		command = input.nextLine();
+    		cmdLine = input.nextLine();
     		String delimeter=" ";
-    		tokens = command.split(delimeter);
+    		tokens = cmdLine.split(delimeter);
+				// check # args supplied
     		if ((tokens[0].equalsIgnoreCase("ls") || tokens[0].equalsIgnoreCase("pwd") || tokens[0].equalsIgnoreCase("quit")) && tokens.length != 1)
-      		System.out.println("Invalid arguments");
+      		System.out.println("Incorrect number of arguments");
     		else if ((tokens[0].equalsIgnoreCase("get")||tokens[0].equalsIgnoreCase("put")||tokens[0].equalsIgnoreCase("delete")||tokens[0].equalsIgnoreCase("mkdir")) && tokens.length != 2)
-      		System.out.println("Invalid arguments");
+      		System.out.println("Incorrect number of arguments");
 
 
         /************************************
@@ -98,29 +101,26 @@ public class MyFtp {
         *************************************/
 
     		else if (tokens[0].equalsIgnoreCase("get")){
-
-						cout.writeBytes("get " + tokens[1] + "\n");
-
-												//error messages
-												String get_line;
-												if (!(get_line = br.readLine()).equals("")) {
-													System.out.println(get_line);
-													continue;
-												}
-												//get file size
-												long fileSize = Long.parseLong(br.readLine());
-												FileOutputStream f = new FileOutputStream(new File(tokens[1]));
-												int count = 0;
-												byte[] buffer = new byte[8192];
-												long bytesReceived = 0;
-												while(bytesReceived < fileSize) {
-													count = cin.read(buffer);
-													f.write(buffer, 0, count);
-													bytesReceived += count;
-												}
-												f.close();
-
-				}
+							// send the command line to server socket
+							cout.writeBytes("get " + tokens[1] + "\n");
+							String get_line;
+							// if error msg sent output and continue
+							if (!(get_line = br.readLine()).equals("")) {
+									System.out.println(get_line);
+									continue;
+							}
+							long fileSize = Long.parseLong(br.readLine());
+							FileOutputStream f = new FileOutputStream(new File(tokens[1]));
+							int count = 0;
+							byte[] buffer = new byte[8192];
+							long bytesReceived = 0;
+							while(bytesReceived < fileSize) {
+										count = cin.read(buffer);
+										f.write(buffer, 0, count);
+										bytesReceived += count;
+							}
+							f.close();
+				} // get
 
 				/************************************
 		     * put fileName
@@ -128,41 +128,34 @@ public class MyFtp {
 				else if(tokens[0].equalsIgnoreCase("put")) {
 					//not a directory or file
 					if (Files.notExists(path.resolve(tokens[1]))) {
-						System.out.println("put: " + tokens[1] + ": No such file or directory");
+						System.out.println("put: " + tokens[1] + " : No such file or directory");
 					}
 					//is a directory
 					else if (Files.isDirectory(path.resolve(tokens[1]))) {
 						System.out.println("put: " + tokens[1] + ": Is a directory");
 					}
-					//transfer file
-					else {
 
-						cout.writeBytes("put " + tokens[1] + "\n");
+					else { // send file
+							cout.writeBytes("put " + tokens[1] + "\n"); // send command line
 
-												File file = new File(path.resolve(tokens[1]).toString());
-												long fileSize1 = file.length();
+							File file = new File(path.resolve(tokens[1]).toString());
+							long fileSize1 = file.length();
 
-												//send file size
-												cout.writeBytes(fileSize1 + "\n");
+							cout.writeBytes(fileSize1 + "\n"); // send #bytes in file
+							Thread.sleep(100); // pause before writing file
 
-												//need to figure
-												Thread.sleep(100);
-
-												byte[] buffer1 = new byte[8192];
-												try {
-													BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
-													int count2 = 0;
-													while((count2 = in.read(buffer1)) > 0)
-														cout.write(buffer1, 0, count2);
-
-													in.close();
-												} catch(Exception e){
-													System.out.println("transfer error: " + tokens[1]);
-												}
-
+							byte[] buffer1 = new byte[8192];
+							try {
+										BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
+										int count2 = 0;
+										while((count2 = in.read(buffer1)) > 0)
+													cout.write(buffer1, 0, count2);
+										in.close();
+							} catch(Exception e){
+										System.out.println("transfer error: " + tokens[1]);
+							}
 					}
-
-				}
+				} // put
 
 				/************************************
 					* ls
@@ -216,18 +209,18 @@ public class MyFtp {
           * Quit
         *************************************/
         else if (tokens[0].equalsIgnoreCase("quit")) {
-	        System.out.println("closing client ...");
+	        System.out.println("Closing client session ...");
 				}
 				else {
 					System.out.println("unrecognized command '" + tokens[0] + "'");
 				}
 
-			} while (!command.equalsIgnoreCase("quit"));
+			} while (!cmdLine.equalsIgnoreCase("quit"));
 			input.close();
-			System.out.println("Client session closing ...");
+			System.out.println("Closing client session ...");
 		}
 		catch(Exception e) {
-			System.out.println("Disconnected");
+			System.out.println("Disconnected session ...");
 		}
 	}
 }
