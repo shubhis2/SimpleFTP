@@ -67,6 +67,11 @@ public class MyFtp {
   			System.out.println("Program unexpected quit");
   		}
   	}
+		/*
+			Send commands to server via cout
+			Send files on cout.  Receive files sent on cin
+			Receive possible error messages on br
+		*/
 
 	public void doCommands() {
 		try {
@@ -86,9 +91,9 @@ public class MyFtp {
     		tokens = cmdLine.split(delimeter);
 				// check # args supplied
     		if ((tokens[0].equalsIgnoreCase("ls") || tokens[0].equalsIgnoreCase("pwd") || tokens[0].equalsIgnoreCase("quit")) && tokens.length != 1)
-      		System.out.println("Invalid arguments");
+      		System.out.println("Incorrect number of arguments");
     		else if ((tokens[0].equalsIgnoreCase("get")||tokens[0].equalsIgnoreCase("put")||tokens[0].equalsIgnoreCase("delete")||tokens[0].equalsIgnoreCase("mkdir")) && tokens.length != 2)
-      		System.out.println("Invalid arguments");
+      		System.out.println("Incorrect number of arguments");
 
 
         /************************************
@@ -96,9 +101,10 @@ public class MyFtp {
         *************************************/
 
     		else if (tokens[0].equalsIgnoreCase("get")){
-
+							// send the command line to server socket
 							cout.writeBytes("get " + tokens[1] + "\n");
 							String get_line;
+							// if error msg sent output and continue
 							if (!(get_line = br.readLine()).equals("")) {
 									System.out.println(get_line);
 									continue;
@@ -114,8 +120,7 @@ public class MyFtp {
 										bytesReceived += count;
 							}
 							f.close();
-
-				}
+				} // get
 
 				/************************************
 		     * put fileName
@@ -129,35 +134,28 @@ public class MyFtp {
 					else if (Files.isDirectory(path.resolve(tokens[1]))) {
 						System.out.println("put: " + tokens[1] + ": Is a directory");
 					}
-					//transfer file
-					else {
 
-						cout.writeBytes("put " + tokens[1] + "\n");
+					else { // send file
+							cout.writeBytes("put " + tokens[1] + "\n"); // send command line
 
-												File file = new File(path.resolve(tokens[1]).toString());
-												long fileSize1 = file.length();
+							File file = new File(path.resolve(tokens[1]).toString());
+							long fileSize1 = file.length();
 
-												//send file size
-												cout.writeBytes(fileSize1 + "\n");
+							cout.writeBytes(fileSize1 + "\n"); // send #bytes in file
+							Thread.sleep(100); // pause before writing file
 
-												//need to figure
-												Thread.sleep(100);
-
-												byte[] buffer1 = new byte[8192];
-												try {
-													BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
-													int count2 = 0;
-													while((count2 = in.read(buffer1)) > 0)
-														cout.write(buffer1, 0, count2);
-
-													in.close();
-												} catch(Exception e){
-													System.out.println("transfer error: " + tokens[1]);
-												}
-
+							byte[] buffer1 = new byte[8192];
+							try {
+										BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
+										int count2 = 0;
+										while((count2 = in.read(buffer1)) > 0)
+													cout.write(buffer1, 0, count2);
+										in.close();
+							} catch(Exception e){
+										System.out.println("transfer error: " + tokens[1]);
+							}
 					}
-
-				}
+				} // put
 
 				/************************************
 					* ls
@@ -211,7 +209,7 @@ public class MyFtp {
           * Quit
         *************************************/
         else if (tokens[0].equalsIgnoreCase("quit")) {
-	        System.out.println("closing client ...");
+	        System.out.println("Closing client session ...");
 				}
 				else {
 					System.out.println("unrecognized command '" + tokens[0] + "'");
@@ -219,10 +217,10 @@ public class MyFtp {
 
 			} while (!cmdLine.equalsIgnoreCase("quit"));
 			input.close();
-			System.out.println("Client session closing ...");
+			System.out.println("Closing client session ...");
 		}
 		catch(Exception e) {
-			System.out.println("Disconnected");
+			System.out.println("Disconnected session ...");
 		}
 	}
 }

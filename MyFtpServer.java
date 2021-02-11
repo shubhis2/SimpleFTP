@@ -28,6 +28,12 @@ public class MyFtpServer implements Runnable {
   {
     try
     {
+      /*
+        Receive command on br
+        Send error messages on cout
+        Send files on cout 
+        Receive files on cin
+      */
 			BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			//Use DataInputStream for platform independent formatting of data
 			DataInputStream cin = new DataInputStream(socket.getInputStream());
@@ -36,15 +42,14 @@ public class MyFtpServer implements Runnable {
       while (true) {
         try {
           //capture and parse input
-          String command = br.readLine();
+          String cmdLine = br.readLine();
           String delimeter=" ";
-          String[] tokens = command.split(delimeter);
+          String[] tokens = cmdLine.split(delimeter);
 
           /*************************************
           * execute commands received from the Client
           ***************************************/
           if(tokens[0].equals("get")) {
-            System.out.println("inside get server");
             // file to get is in tokens[1]
             //not a directory or file
 
@@ -56,14 +61,13 @@ public class MyFtpServer implements Runnable {
               cout.writeBytes("get: " + tokens[1] + ": Is a directory" + "\n");
             }
             // send file
-            else {    //no  message
-              cout.writeBytes("\n");
+            else {
+              cout.writeBytes("\n"); // empty error msg
               File file = new File(path.resolve(tokens[1]).toString());
               long fileSize = file.length(); // length returns file size in bytes
-
               //send file size
               cout.writeBytes(fileSize + "\n");
-              Thread.sleep(100);
+              Thread.sleep(100); // pause before writing file
 
               byte[] buffer = new byte[8192];
               try {
