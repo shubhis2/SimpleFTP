@@ -1,8 +1,8 @@
 /****************************************************
- * FTP Client - MyFtp host port#
- * CSCI 6780 - Distributed Computing - Dr. Ramaswamy
- * Authors: Diane Stephens, Shubhi Shrivastava
- *****************************************************/
+* FTP Client - MyFtp host port#
+* CSCI 6780 - Distributed Computing - Dr. Ramaswamy
+* Authors: Diane Stephens, Shubhi Shrivastava
+*****************************************************/
 import java.net.*;
 import java.io.*;
 import java.nio.file.*;
@@ -13,117 +13,119 @@ public class MyFtp {
 	private Path path;
 
 	public MyFtp(String hostname, int port) throws Exception {
-		socket = new Socket();
-		// InetAddress represents both Ipv4 and IPv6 addresses
-		InetAddress inetAddress = InetAddress.getByName(hostname);
-		// InetSocketAddress constructor creates a socketaddress object (IP addr and port#)
-		// and binds it to the specified ip (from getHostAddress) and port
-		SocketAddress socketAddress = new InetSocketAddress(inetAddress.getHostAddress(), port);
-		// connect this client socket to the server socket
-		socket.connect(socketAddress);
-		// output some information
-		System.out.println("IP address: " + socket.getInetAddress());
-		System.out.println("Port number: " + socket.getLocalPort());
-		// get the string representing the client's working directory
-		String cwd = System.getProperty("user.dir");
-		// get Path object of current working directory
-		path = Paths.get(cwd);
-		System.out.println("Connected to: " + inetAddress);
+			socket = new Socket();
+	    // InetAddress represents both Ipv4 and IPv6 addresses
+				InetAddress inetAddress = InetAddress.getByName(hostname);
+
+	    // InetSocketAddress constructor creates a socketaddress object (IP addr and port#)
+	    // and binds it to the specified ip (from getHostAddress) and port
+	    SocketAddress socketAddress = new InetSocketAddress(inetAddress.getHostAddress(), port);
+	    // connect this client socket to the server socket
+			socket.connect(socketAddress);
+
+	    // System.out.println("IP address: "+socket.getInetAddress());
+	    // System.out.println("Port number: "+socket.getLocalPort());
+	    // get the string representing the client's working directory
+	    String cwd = System.getProperty("user.dir");
+	    // get Path object of current working directory
+	    path = Paths.get(cwd);
+	    System.out.println("Connected to: " + inetAddress);
 	}
 
-	/*
-	 * Begin client program to connect to server and issue basic ftp commands
-	 * invoke: MyFtp hostname portnumber
-	 */
-	public static void main(String[] args) {
-		//num of args
-		if (args.length != 2) {
-			System.out.println("Please enter: myftp hostname port#");
-			System.exit(1);
-		}
-		int port = Integer.parseInt(args[1]);
-		try {
-			// establish connection with server on port
-			MyFtp ftpClient = new MyFtp(args[0], port);
-			// process commands from the client
-			ftpClient.doCommands();
-		} catch (SocketTimeoutException ste) {
-			System.out.println("Error: host could not be reached");
-		} catch (ConnectException ce) {
-			System.out.println("Error: no running FTP at remote host");
-		} catch (Exception h) {
-			System.out.println("Error: program terminated unexpectedly");
-		}
-	}
+  	/*
+     * Begin client program to connect to server and issue basic ftp commands
+     * invoke: MyFtp hostname portnumber
+  	 */
+  	public static void main(String[] args) {
+  		int port = 1000;
+			if (args.length != 2) {
+  				System.out.println("Please enter: myftp hostname port#");
+  				System.exit(1);
+  		}
+			try {
+					port = Integer.parseInt(args[1]);
+			} catch(Exception e) {
+					System.out.println("Invalid port number");
+					System.exit(1);
+			}
+			try {
+				InetAddress.getByName(args[0]);
+			} catch(Exception f) {
+					System.out.println("Invalid hostname");
+					System.exit(1);
+			}
+  		try {
+        // establish connection with server on port
+  			MyFtp ftpClient = new MyFtp(args[0], port);
+        // process commands from the client
+  			ftpClient.doCommands();
+  		}
+  		catch(SocketTimeoutException ste) {
+  			System.out.println("Connection Timeout");
+  		}
+  		catch(ConnectException ce) {
+  			System.out.println("Not able to connect to server");
+  		}
+  		catch(Exception h) {
+  			System.out.println("Program unexpected quit");
+  		}
+  	}
 
 	public void doCommands() {
 		try {
-			DataInputStream cin = new DataInputStream(socket.getInputStream());
-			DataOutputStream cout = new DataOutputStream(socket.getOutputStream());
-			BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			DataInputStream cin=new DataInputStream(socket.getInputStream());
+			DataOutputStream cout=new DataOutputStream(socket.getOutputStream());
+			BufferedReader br=new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			//keyboard input
 			Scanner input = new Scanner(System.in);
 			String command;
-			String[] tokens;
+			String[]tokens;
 			String lineOut;
 
 			do {
-				//get input
 				System.out.print("MyFtp > ");
-				command = input.nextLine();
-				String delimeter = " ";
-				tokens = command.split(delimeter);
+    		command = input.nextLine();
+    		String delimeter=" ";
+    		tokens = command.split(delimeter);
+    		if ((tokens[0].equalsIgnoreCase("ls") || tokens[0].equalsIgnoreCase("pwd") || tokens[0].equalsIgnoreCase("quit")) && tokens.length != 1)
+      		System.out.println("Invalid arguments");
+    		else if ((tokens[0].equalsIgnoreCase("get")||tokens[0].equalsIgnoreCase("put")||tokens[0].equalsIgnoreCase("delete")||tokens[0].equalsIgnoreCase("mkdir")) && tokens.length != 2)
+      		System.out.println("Invalid arguments");
 
-				if ((tokens[0].equalsIgnoreCase("ls") || tokens[0].equalsIgnoreCase("pwd") || tokens[0].equalsIgnoreCase("quit")) && tokens.length != 1)
-					System.out.println("Invalid arguments");
-				else if ((tokens[0].equalsIgnoreCase("get") || tokens[0].equalsIgnoreCase("put") || tokens[0].equalsIgnoreCase("delete") || tokens[0].equalsIgnoreCase("mkdir")) && tokens.length != 2)
-					System.out.println("Invalid arguments");
 
-				/************************************
-				 * get fileName
-				 *************************************/
+        /************************************
+        * get fileName
+        *************************************/
 
-				else if (tokens[0].equalsIgnoreCase("get")) {
-					//send command
-					cout.writeBytes("get " + tokens[1] + "\n");
-					//error messages
-					if (!(lineOut = br.readLine()).equals("")) {
-						System.out.println(lineOut);
-						continue;
-					}
-					//get file size
-					long fileSize = Long.parseLong(br.readLine());
-					File fl = new File(tokens[1]);
-					FileOutputStream f = new FileOutputStream(fl);
-					/*BufferedReader br1 = new BufferedReader(new InputStreamReader(System.in));
-					if (fl.exists()) {
-						System.out.println("File exist");
-						System.out.println("Overwrite? y/n");
-						String option = br1.readLine();
-						if (option.equals("n")) {
-							continue;
-						}
-						if (option.equals("y")) {*/
-							int count = 0;
-							byte[] buffer = new byte[8192];
-							long bytesReceived = 0;
-							while (bytesReceived<fileSize) {
-								count = cin.read(buffer);
-								f.write(buffer, 0, count);
-								bytesReceived += count;
-							}
-							System.out.println("File received");
-						//}
-						//br1.close();
-					//}
-					f.close();
+    		else if (tokens[0].equalsIgnoreCase("get")){
+
+						cout.writeBytes("get " + tokens[1] + "\n");
+
+												//error messages
+												String get_line;
+												if (!(get_line = br.readLine()).equals("")) {
+													System.out.println(get_line);
+													continue;
+												}
+												//get file size
+												long fileSize = Long.parseLong(br.readLine());
+												FileOutputStream f = new FileOutputStream(new File(tokens[1]));
+												int count = 0;
+												byte[] buffer = new byte[8192];
+												long bytesReceived = 0;
+												while(bytesReceived < fileSize) {
+													count = cin.read(buffer);
+													f.write(buffer, 0, count);
+													bytesReceived += count;
+												}
+												f.close();
+
 				}
 
 				/************************************
-				 * put fileName
-				 *************************************/
-				else if (tokens[0].equalsIgnoreCase("put")) {
-
+		     * put fileName
+		    *************************************/
+				else if(tokens[0].equalsIgnoreCase("put")) {
 					//not a directory or file
 					if (Files.notExists(path.resolve(tokens[1]))) {
 						System.out.println("put: " + tokens[1] + ": No such file or directory");
@@ -134,33 +136,37 @@ public class MyFtp {
 					}
 					//transfer file
 					else {
+
 						cout.writeBytes("put " + tokens[1] + "\n");
-						File file = new File(path.resolve(tokens[1]).toString());
-						long fileSize1 = file.length();
 
-						//send file size
-						cout.writeBytes(fileSize1 + "\n");
+												File file = new File(path.resolve(tokens[1]).toString());
+												long fileSize1 = file.length();
 
-						//need to figure
-						Thread.sleep(100);
+												//send file size
+												cout.writeBytes(fileSize1 + "\n");
 
-						byte[] buffer1 = new byte[8192];
-						try {
-							BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
-							int count2 = 0;
-							while ((count2 = in .read(buffer1)) > 0)
-								cout.write(buffer1, 0, count2);
-							System.out.println("File sent to Server"); in .close();
-						} catch (Exception e) {
-							System.out.println("transfer error: " + tokens[1]);
-						}
+												//need to figure
+												Thread.sleep(100);
+
+												byte[] buffer1 = new byte[8192];
+												try {
+													BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
+													int count2 = 0;
+													while((count2 = in.read(buffer1)) > 0)
+														cout.write(buffer1, 0, count2);
+
+													in.close();
+												} catch(Exception e){
+													System.out.println("transfer error: " + tokens[1]);
+												}
+
 					}
 
 				}
 
 				/************************************
-				 * ls
-				 *************************************/
+					* ls
+				*************************************/
 				else if (tokens[0].equalsIgnoreCase("ls")) {
 					cout.writeBytes("ls" + "\n");
 					while (!(lineOut = br.readLine()).equals(""))
@@ -168,18 +174,18 @@ public class MyFtp {
 				}
 
 				/************************************
-				 * delete fileName
-				 *************************************/
-				else if (tokens[0].equalsIgnoreCase("delete")) {
+					* delete fileName
+				*************************************/
+				else if(tokens[0].equalsIgnoreCase("delete")) {
 					cout.writeBytes("delete " + tokens[1] + "\n");
 					while (!(lineOut = br.readLine()).equals(""))
-						System.out.println(lineOut);
+					    System.out.println(lineOut);
 
 				}
 
-				/************************************
-				 * cd directoryname
-				 *************************************/
+        /************************************
+					* cd directoryname
+        *************************************/
 				else if (tokens[0].equalsIgnoreCase("cd")) {
 					if (tokens.length == 1) //allow "cd" goes back to home directory
 						cout.writeBytes("cd" + "\n");
@@ -189,37 +195,39 @@ public class MyFtp {
 						System.out.println(lineOut);
 				}
 
-				/************************************
-				 * mkdir directoryname
-				 *************************************/
-				else if (tokens[0].equalsIgnoreCase("mkdir")) {
+        /************************************
+					* mkdir directoryname
+        *************************************/
+				else if(tokens[0].equalsIgnoreCase("mkdir")) {
 					cout.writeBytes("mkdir " + tokens[1] + "\n");
 					if (!(lineOut = br.readLine()).equals(""))
 						System.out.println(lineOut);
 				}
 
-				/************************************
-				 * pwd
-				 *************************************/
-				else if (tokens[0].equalsIgnoreCase("pwd")) {
+        /************************************
+         * pwd
+        *************************************/
+        else if (tokens[0].equalsIgnoreCase("pwd")) {
 					cout.writeBytes("pwd" + "\n");
 					System.out.println(br.readLine());
-				}
+        }
 
-				/************************************
-				 * Quit
-				 *************************************/
-				else if (tokens[0].equalsIgnoreCase("quit")) {
-					System.out.println("closing client ...");
-				} else {
+        /************************************
+          * Quit
+        *************************************/
+        else if (tokens[0].equalsIgnoreCase("quit")) {
+	        System.out.println("closing client ...");
+				}
+				else {
 					System.out.println("unrecognized command '" + tokens[0] + "'");
 				}
 
 			} while (!command.equalsIgnoreCase("quit"));
 			input.close();
 			System.out.println("Client session closing ...");
-		} catch (Exception e) {
-			System.out.println("Error: disconnected from host");
+		}
+		catch(Exception e) {
+			System.out.println("Disconnected");
 		}
 	}
 }
