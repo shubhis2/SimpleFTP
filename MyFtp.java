@@ -217,7 +217,7 @@ public class MyFtp {
 
 			} while (!cmdLine.equalsIgnoreCase("quit"));
 			input.close();
-			System.out.println("Closing client session ...");
+			System.out.println("Bye bye ...");
 		}
 		catch(Exception e) {
 			System.out.println("Disconnected session ...");

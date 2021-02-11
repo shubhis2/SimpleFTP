@@ -31,7 +31,7 @@ public class MyFtpServer implements Runnable {
       /*
         Receive command on br
         Send error messages on cout
-        Send files on cout 
+        Send files on cout
         Receive files on cin
       */
 			BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -88,7 +88,6 @@ public class MyFtpServer implements Runnable {
             * put fileName
           *******************************************/
           else if (tokens[0].equals("put")) {
-            System.out.println("inside put server");
             long fileSize = Long.parseLong(br.readLine());
             File fle = new File(path.resolve(tokens[1]).toString());
             FileOutputStream f = new FileOutputStream(fle);
@@ -236,8 +235,8 @@ public class MyFtpServer implements Runnable {
     try {
       ServerSocket serverSocket = new ServerSocket(port);
       System.out.println("Server started");
+      System.out.println("Waiting for a client ...");
       while (true) {
-        System.out.println("Waiting for a client ...");
         (new Thread(new MyFtpServer(serverSocket.accept()))).start();
       }
     }
