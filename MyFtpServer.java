@@ -55,7 +55,7 @@ public class MyFtpServer implements Runnable {
             else if (Files.isDirectory(path.resolve(tokens[1]))) {
               cout.writeBytes("get: " + tokens[1] + ": Is a directory" + "\n");
             }
-            //transfer file
+            // send file
             else {    //no  message
               cout.writeBytes("\n");
               File file = new File(path.resolve(tokens[1]).toString());

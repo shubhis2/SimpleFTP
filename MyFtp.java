@@ -123,7 +123,7 @@ public class MyFtp {
 				else if(tokens[0].equalsIgnoreCase("put")) {
 					//not a directory or file
 					if (Files.notExists(path.resolve(tokens[1]))) {
-						System.out.println("put: " + tokens[1] + ": No such file or directory");
+						System.out.println("put: " + tokens[1] + " : No such file or directory");
 					}
 					//is a directory
 					else if (Files.isDirectory(path.resolve(tokens[1]))) {
