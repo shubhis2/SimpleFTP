@@ -8,17 +8,23 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
+
 public class MyFtp {
 	private Socket socket;
 	private Path path;
+	int nport, tport;
+	String hostname;
 
-	public MyFtp(String hostname, int port) throws Exception {
+// initialize
+
+	public MyFtp(String hostname, int n_port) throws Exception {
+
 			socket = new Socket();
 	    // InetAddress represents both Ipv4 and IPv6 addresses
 			InetAddress inetAddress = InetAddress.getByName(hostname);
 	    // InetSocketAddress constructor creates a socketaddress object (IP addr and port#)
 	    // binds it to the specified ip (from getHostAddress) and port
-	    SocketAddress socketAddress = new InetSocketAddress(inetAddress.getHostAddress(), port);
+	    SocketAddress socketAddress = new InetSocketAddress(inetAddress.getHostAddress(), n_port);
 	    // connect this client socket to the server socket
 			socket.connect(socketAddress);
 			System.out.println("Connected to: " + inetAddress);
@@ -34,13 +40,16 @@ public class MyFtp {
      * invoke: MyFtp hostname portnumber
   	 */
   	public static void main(String[] args) {
-  		int port = 1000;
-			if (args.length != 2) {
-  				System.out.println("Please enter: myftp hostname port#");
+			String hostname;
+			int nport = 1998, tport = 1999;
+	//		int nport = 1000, tport = 1000;
+			if (args.length != 3) {
+  				System.out.println("Please enter: myftp hostname port# port#");
   				System.exit(1);
   		}
 			try {
-					port = Integer.parseInt(args[1]);
+					nport = Integer.parseInt(args[1]);
+					tport = Integer.parseInt(args[2]);
 			} catch(Exception e) {
 					System.out.println("Invalid port number");
 					System.exit(1);
@@ -53,7 +62,7 @@ public class MyFtp {
 			}
   		try {
         // instantiate client to create, bind & connect to server socket
-  			MyFtp ftpClient = new MyFtp(args[0], port);
+  			MyFtp ftpClient = new MyFtp(args[0], nport);
         // invoke doCommands to parse commands and send to server
   			ftpClient.doCommands();
   		}
@@ -90,11 +99,29 @@ public class MyFtp {
     		String delimeter=" ";
     		tokens = cmdLine.split(delimeter);
 				// check # args supplied
-    		if ((tokens[0].equalsIgnoreCase("ls") || tokens[0].equalsIgnoreCase("pwd") || tokens[0].equalsIgnoreCase("quit")) && tokens.length != 1)
+				if (tokens.length > 2 && !tokens[3].equals("&"))
+					System.out.println("Incorrect number of arguments");
+    		else if ((tokens[0].equalsIgnoreCase("ls") || tokens[0].equalsIgnoreCase("pwd") || tokens[0].equalsIgnoreCase("quit")) && tokens.length != 1)
       		System.out.println("Incorrect number of arguments");
     		else if ((tokens[0].equalsIgnoreCase("get")||tokens[0].equalsIgnoreCase("put")||tokens[0].equalsIgnoreCase("delete")||tokens[0].equalsIgnoreCase("mkdir")) && tokens.length != 2)
       		System.out.println("Incorrect number of arguments");
 
+				/****************************************************
+				* if & - get and put run in new Thread
+				*****************************************************/
+				else if (tokens[0].equalsIgnoreCase("get") || tokens[0].equalsIgnoreCase("put") && tokens[3].equals("&")) {
+					System.out.println("Launching doCommands_bg thread !!!");
+					Runnable r1 = new doCommands_bg(hostname, nport);
+					new Thread(r1).start();
+			
+					/****************************************************
+					* terminate - launch new terminate thread
+					*****************************************************/
+				} else if (tokens[0].equalsIgnoreCase("terminate")) {
+						System.out.println("Launching thread Terminate!!!");
+						Runnable t1 = new Terminate(hostname, tport);
+						new Thread(t1).start();
+				}
 
         /************************************
         * get fileName
@@ -223,4 +250,54 @@ public class MyFtp {
 			System.out.println("Disconnected session ...");
 		}
 	}
+}
+
+// Here we can extends any other class
+class Terminate implements Runnable {
+
+	   public Terminate(String host, int tport) throws Exception {
+			 int t_port = tport;
+			 Socket t_socket = new Socket();
+ 	    // InetAddress represents both Ipv4 and IPv6 addresses
+ 			InetAddress t_inetAddress = InetAddress.getByName(host);
+ 	    // InetSocketAddress constructor creates a socketaddress object (IP addr and port#)
+ 	    // binds it to the specified ip (from getHostAddress) and port
+
+ 	    SocketAddress t_socketAddress = new InetSocketAddress(t_inetAddress.getHostAddress(), t_port);
+ 	    // connect this client socket to the server socket
+ 			t_socket.connect(t_socketAddress);
+ 			System.out.println("Connected to: " + t_inetAddress);
+			DataInputStream t_cin=new DataInputStream(t_socket.getInputStream());
+			DataOutputStream t_cout=new DataOutputStream(t_socket.getOutputStream());
+
+	   }
+
+	   public void run() {
+			 System.out.println("Run method of Terminate thread");
+	 	}
+}
+
+// Here we can extends any other class
+class doCommands_bg implements Runnable {
+
+	   public doCommands_bg(String host, int nport) throws Exception {
+			 int n_port = nport;
+			 Socket n_socket = new Socket();
+ 	    // InetAddress represents both Ipv4 and IPv6 addresses
+ 			InetAddress n_inetAddress = InetAddress.getByName(host);
+ 	    // InetSocketAddress constructor creates a socketaddress object (IP addr and port#)
+ 	    // binds it to the specified ip (from getHostAddress) and port
+
+ 	    SocketAddress n_socketAddress = new InetSocketAddress(n_inetAddress.getHostAddress(), n_port);
+ 	    // connect this client socket to the server socket
+ 			n_socket.connect(n_socketAddress);
+ 			System.out.println("Connected to: " + n_inetAddress);
+			DataInputStream n_cin=new DataInputStream(n_socket.getInputStream());
+			DataOutputStream n_cout=new DataOutputStream(n_socket.getOutputStream());
+
+	   }
+
+	   public void run() {
+			 System.out.println("Run method of doCommands_bg thread");
+	 	}
 }
