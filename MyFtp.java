@@ -12,12 +12,12 @@ import java.util.*;
 public class MyFtp {
 	private Socket socket;
 	private Path path;
-	int nport, tport;
-	String hostname;
+	public static int nport, tport;
+	public static String hostname;
 
 // initialize
-
-	public MyFtp(String hostname, int n_port) throws Exception {
+/*  moved this to commander thread
+	public MyFtp() throws Exception {
 
 			socket = new Socket();
 	    // InetAddress represents both Ipv4 and IPv6 addresses
@@ -34,14 +34,14 @@ public class MyFtp {
 	    path = Paths.get(cwd);
 
 	}
-
+*/
   	/*
      * Begin client program to connect to server and pass commands to server
      * invoke: MyFtp hostname portnumber
   	 */
   	public static void main(String[] args) {
-			String hostname;
-			int nport = 1998, tport = 1999;
+
+			 	nport = 1998; tport = 1999; // initialize to something
 	//		int nport = 1000, tport = 1000;
 			if (args.length != 3) {
   				System.out.println("Please enter: myftp hostname port# port#");
@@ -56,15 +56,15 @@ public class MyFtp {
 			}
 			try {
 				InetAddress.getByName(args[0]);
-			} catch(Exception f) {
+			} catch(Exception e) {
 					System.out.println("Invalid hostname");
 					System.exit(1);
 			}
   		try {
-        // instantiate client to create, bind & connect to server socket
-  			MyFtp ftpClient = new MyFtp(args[0], nport);
-        // invoke doCommands to parse commands and send to server
-  			ftpClient.doCommands();
+        // instantiate client address space
+  			Client client = new Client();
+        // create thread Commander to parse commands and send to server
+				(new Thread(new Commander(client, hostname, nport))).start();
   		}
   		catch(SocketTimeoutException ste) {
   			System.out.println("Connection Timeout");
@@ -113,7 +113,7 @@ public class MyFtp {
 					System.out.println("Launching doCommands_bg thread !!!");
 					Runnable r1 = new doCommands_bg(hostname, nport);
 					new Thread(r1).start();
-			
+
 					/****************************************************
 					* terminate - launch new terminate thread
 					*****************************************************/
