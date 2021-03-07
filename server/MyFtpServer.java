@@ -1,13 +1,7 @@
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.*;
 
 public class MyFtpServer {
 	private Map<Path, ReentrantReadWriteLock> transferMap;
@@ -66,7 +60,7 @@ public class MyFtpServer {
 			if (transferMap.get(path).getReadLockCount() == 0 && !transferMap.get(path).isWriteLocked())
 				transferMap.remove(path);
 		} catch (Exception e) {
-			if (Main.DEBUG) e.printStackTrace(); //TODO
+			e.printStackTrace();
 		}
 
 	}
@@ -111,7 +105,7 @@ public class MyFtpServer {
 			if (transferMap.get(path).getReadLockCount() == 0 && !transferMap.get(path).isWriteLocked())
 				transferMap.remove(path);
 		} catch (Exception e) {
-			if (Main.DEBUG) e.printStackTrace();
+			e.printStackTrace();
 		}
 
 	}
@@ -140,7 +134,7 @@ public class MyFtpServer {
 				return true;
 			}
 		} catch (Exception e) {
-			if (Main.DEBUG) e.printStackTrace();
+				e.printStackTrace();
 		}
 
 		return false;
@@ -162,24 +156,10 @@ public class MyFtpServer {
 				return true;
 			}
 		} catch (Exception e) {
-			if (Main.DEBUG) e.printStackTrace();
+			e.printStackTrace();
 		}
 
 		return false;
 	}
 
-	public void status() {
-		System.out.println("FTPServer: transferMap-commandIDMap-writeQueue-terminateSet");
-		System.out.println(transferMap.toString());
-		System.out.println(commandIDMap.toString());
-		System.out.println(writeQueue.toString());
-		System.out.println(terminateSet.toString());
-	}
-
-	@Override
-	public String toString() {
-		return "FTPServer [transferMap=" + transferMap + ", commandIDMap="
-				+ commandIDMap + ", writeQueue=" + writeQueue
-				+ ", terminateSet=" + terminateSet + "]";
-	}
 }
