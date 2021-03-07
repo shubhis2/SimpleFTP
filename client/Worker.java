@@ -7,6 +7,7 @@ import java.net.*;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import java.nio.ByteBuffer;
 
 public class Worker implements Runnable {
 	private FtpClient ftpClient;
@@ -335,7 +336,7 @@ public class Worker implements Runnable {
 			String command;
 
 			do {
-				System.out.print(Main.PROMPT);
+				System.out.print("MyFtp >> ");
 				command = input.nextLine();
 				command = command.trim();
 
@@ -360,7 +361,6 @@ public class Worker implements Runnable {
 					case "mkdir": 		mkdir(); 		break;
 					case "pwd": 		pwd(); 			break;
 					case "quit": 		quit(); 		break;
-					case "help": 		help(); 		break;
 					case "terminate":	terminate();	break;
 					default:
 						System.out.println("unrecognized command '" + tokens.get(0) + "'");

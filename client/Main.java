@@ -8,7 +8,7 @@ public class Main {
 	public static String hostname;
 
 	public static void main(String[] args) {
-		nport = 1998; tport = 1999; // initialize to something
+		nPort = 1998; tPort = 1999; // initialize to something
 		if (args.length != 3) {
 			System.out.println("Please enter: myftp hostname port# port#");
 			System.exit(1);

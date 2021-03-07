@@ -7,6 +7,7 @@ import java.net.*;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import java.nio.ByteBuffer;
 
 public class PutWorker implements Runnable {
 	private FtpClient ftpClient;
