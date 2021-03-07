@@ -16,7 +16,6 @@ public class Main {
 		int nPort = 0;
 		try {
 			nPort = Integer.parseInt(args[0]);
-			if (nPort < 1 || nPort > 65535) throw new Exception();
 		} catch (NumberFormatException nfe) {
 			System.out.println("error: Invalid nport number");
 			return;
@@ -61,7 +60,7 @@ public class Main {
 			(new Thread(new TerminateDaemon(ftpServer, tSocket))).start();
 		} catch (Exception e) {
 			System.out.println("ftp.server.Main");
-			e.printStackTrace(); 
+			e.printStackTrace();
 		}
 	}
 }

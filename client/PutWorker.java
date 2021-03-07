@@ -13,7 +13,7 @@ public class PutWorker implements Runnable {
 	private FtpClient ftpClient;
 	private Socket socket;
 	private Path path, serverPath;
-	private List<String> tokens;
+	private String[] tokens;
 	private int terminateID;
 
 
@@ -23,7 +23,7 @@ public class PutWorker implements Runnable {
 	private DataOutputStream dStream;
 
 
-	public PutWorker(FtpClient ftpClient, String hostname, int nPort, List<String> tokens, Path serverPath) throws Exception {
+	public PutWorker(FtpClient ftpClient, String hostname, int nPort, String[] tokens, Path serverPath) throws Exception {
 		this.ftpClient = ftpClient;
 		this.tokens = tokens;
 		this.serverPath = serverPath;
@@ -42,22 +42,22 @@ public class PutWorker implements Runnable {
 
 	public void put() throws Exception {
 
-		if (!ftpClient.transfer(serverPath.resolve(tokens.get(1)))) {
+		if (!ftpClient.transfer(serverPath.resolve(tokens[1]))) {
 			System.out.println("error: file already transfering");
 			return;
 		}
 
-		if (Files.notExists(path.resolve(tokens.get(1)))) {
-			System.out.println("put: " + tokens.get(1) + ": No such file or directory");
+		if (Files.notExists(path.resolve(tokens[1]))) {
+			System.out.println("put: " + tokens[1] + ": No such file or directory");
 		}
 
-		else if (Files.isDirectory(path.resolve(tokens.get(1)))) {
-			System.out.println("put: " + tokens.get(1) + ": Is a directory");
+		else if (Files.isDirectory(path.resolve(tokens[1]))) {
+			System.out.println("put: " + tokens[1] + ": Is a directory");
 		}
 
 		else {
 
-			dStream.writeBytes("put " + serverPath.resolve(tokens.get(1)) + "\n");
+			dStream.writeBytes("put " + serverPath.resolve(tokens[1]) + "\n");
 
 			try {
 				terminateID = Integer.parseInt(reader.readLine());
@@ -66,29 +66,29 @@ public class PutWorker implements Runnable {
 			}
 			System.out.println("TerminateID: " + terminateID);
 
-			ftpClient.transferIN(serverPath.resolve(tokens.get(1)), terminateID);
+			ftpClient.transferIN(serverPath.resolve(tokens[1]), terminateID);
 
-			if (ftpClient.terminatePUT(serverPath.resolve(tokens.get(1)), terminateID)) return;
+			if (ftpClient.terminatePUT(serverPath.resolve(tokens[1]), terminateID)) return;
 
 			reader.readLine();
 			Thread.sleep(100);
 
-			if (ftpClient.terminatePUT(serverPath.resolve(tokens.get(1)), terminateID)) return;
+			if (ftpClient.terminatePUT(serverPath.resolve(tokens[1]), terminateID)) return;
 
 			byte[] buffer = new byte[1000];
 			try {
-				File file = new File(path.resolve(tokens.get(1)).toString());
+				File file = new File(path.resolve(tokens[1]).toString());
 
 				long fileSize = file.length();
 				byte[] fileSizeBytes = ByteBuffer.allocate(8).putLong(fileSize).array();
 				dStream.write(fileSizeBytes, 0, 8);
 
-				if (ftpClient.terminatePUT(serverPath.resolve(tokens.get(1)), terminateID)) return;
+				if (ftpClient.terminatePUT(serverPath.resolve(tokens[1]), terminateID)) return;
 
 				BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
 				int count = 0;
 				while((count = in.read(buffer)) > 0) {
-					if (ftpClient.terminatePUT(serverPath.resolve(tokens.get(1)), terminateID)) {
+					if (ftpClient.terminatePUT(serverPath.resolve(tokens[1]), terminateID)) {
 						in.close();
 						return;
 					}
@@ -97,10 +97,10 @@ public class PutWorker implements Runnable {
 
 				in.close();
 			} catch(Exception e){
-				System.out.println("transfer error: " + tokens.get(1));
+				System.out.println("transfer error: " + tokens[1]);
 			}
 
-			ftpClient.transferOUT(serverPath.resolve(tokens.get(1)), terminateID);
+			ftpClient.transferOUT(serverPath.resolve(tokens[1]), terminateID);
 		}
 	}
 
