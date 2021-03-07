@@ -1,9 +1,12 @@
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+/****************************************************
+* FTP Client - MyFtp host port#
+* CSCI 6780 - Distributed Computing - Dr. Ramaswamy
+* Authors: Diane Stephens, Shubhi Shrivastava
+*****************************************************/
+import java.net.*;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
 
 public class FtpClient {
 	private Set<Path> transferSet;

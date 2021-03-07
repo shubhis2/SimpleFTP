@@ -1,18 +1,12 @@
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
+/****************************************************
+* FTP Client - MyFtp host port#
+* CSCI 6780 - Distributed Computing - Dr. Ramaswamy
+* Authors: Diane Stephens, Shubhi Shrivastava
+*****************************************************/
+import java.net.*;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
 
 public class PutWorker implements Runnable {
 	private FtpClient ftpClient;
@@ -67,7 +61,7 @@ public class PutWorker implements Runnable {
 			try {
 				terminateID = Integer.parseInt(reader.readLine());
 			} catch(Exception e) {
-				if (Main.DEBUG) System.out.println("Invalid TerminateID");
+				System.out.println("Invalid TerminateID");
 			}
 			System.out.println("TerminateID: " + terminateID);
 

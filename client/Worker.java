@@ -1,23 +1,12 @@
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+/****************************************************
+* FTP Client - MyFtp host port#
+* CSCI 6780 - Distributed Computing - Dr. Ramaswamy
+* Authors: Diane Stephens, Shubhi Shrivastava
+*****************************************************/
+import java.net.*;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
 
 public class Worker implements Runnable {
 	private FtpClient ftpClient;
@@ -67,7 +56,7 @@ public class Worker implements Runnable {
 				serverPath = Paths.get(get_line);
 			}
 		} catch (Exception e) {
-			if (Main.DEBUG) System.out.println("stream initiation error"); //TODO
+			System.out.println("stream initiation error");
 		}
 	}
 
@@ -107,7 +96,7 @@ public class Worker implements Runnable {
 		try {
 			terminateID = Integer.parseInt(reader.readLine());
 		} catch(Exception e) {
-			if (Main.DEBUG) System.out.println("Invalid TerminateID");
+			System.out.println("Invalid TerminateID");
 		}
 
 		ftpClient.transferIN(serverPath.resolve(tokens.get(1)), terminateID);
@@ -171,7 +160,7 @@ public class Worker implements Runnable {
 			try {
 				terminateID = Integer.parseInt(reader.readLine());
 			} catch(Exception e) {
-				if (Main.DEBUG) System.out.println("Invalid TerminateID");
+				System.out.println("Invalid TerminateID");
 			}
 
 			ftpClient.transferIN(serverPath.resolve(tokens.get(1)), terminateID);
@@ -197,7 +186,7 @@ public class Worker implements Runnable {
 
 				in.close();
 			} catch(Exception e){
-				if (Main.DEBUG) System.out.println("transfer error: " + tokens.get(1));
+				System.out.println("transfer error: " + tokens.get(1));
 			}
 
 			ftpClient.transferOUT(serverPath.resolve(tokens.get(1)), terminateID);
@@ -340,19 +329,6 @@ public class Worker implements Runnable {
 		System.out.println("Try `help' for more information.");
 	}
 
-	public void help() {
-		System.out.println("Available commands:");
-		System.out.println(" get (get <remote_filename>) \t\t  – Copy file with the name <remote_filename> from remote directory to local directory.");
-		System.out.println(" put (put <local_filename>) \t\t  – Copy file with the name <local_filename> from local directory to remote directory.");
-		System.out.println(" delete (delete <remote_filename>) \t  – Delete the file with the name <remote_filename> from the remote directory.");
-		System.out.println(" ls (ls) \t\t\t\t  – List the files and subdirectories in the remote directory.");
-		System.out.println(" cd (cd <remote_direcotry_name> or cd ..) – Change to the <remote_direcotry_name> on the remote machine or change to the parent directory of the current directory.");
-		System.out.println(" mkdir (mkdir <remote_directory_name>) \t  – Create directory named <remote_direcotry_name> as the sub-directory of the current working directory on the remote machine.");
-		System.out.println(" pwd (pwd) \t\t\t\t  – Print the current working directory on the remote machine.");
-		System.out.println(" terminate (terminate <command-ID> \t  – terminate the command identiied by <command-ID>.");
-		System.out.println(" quit (quit) \t\t\t\t  – End the FTP session.");
-	}
-
 	public void input() {
 		try {
 			Scanner input = new Scanner(System.in);
@@ -370,7 +346,7 @@ public class Worker implements Runnable {
 				if (tokenize.hasNext())
 					tokens.add(command.substring(tokens.get(0).length()).trim());
 				tokenize.close();
-				if (Main.DEBUG) System.out.println(tokens);
+				System.out.println(tokens);
 
 				if (tokens.isEmpty())
 					continue;
@@ -393,11 +369,9 @@ public class Worker implements Runnable {
 			} while (!command.equalsIgnoreCase("quit"));
 			input.close();
 
-
-			System.out.println(Main.EXIT_MESSAGE);
 		} catch (Exception e) {
 			System.out.println("error: disconnected from host");
-			if (Main.DEBUG) e.printStackTrace();
+			e.printStackTrace();
 		}
 	}
 

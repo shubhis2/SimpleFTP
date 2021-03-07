@@ -1,9 +1,12 @@
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
+/****************************************************
+* FTP Client - MyFtp host port#
+* CSCI 6780 - Distributed Computing - Dr. Ramaswamy
+* Authors: Diane Stephens, Shubhi Shrivastava
+*****************************************************/
+import java.net.*;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
 
 public class TerminateWorker implements Runnable {
 	private Socket socket;
@@ -26,7 +29,7 @@ public class TerminateWorker implements Runnable {
 		try {
 			dStream.writeBytes("terminate " + terminateID + "\n");
 		} catch (IOException e) {
-			if (Main.DEBUG) System.out.println("TerminateWorker");
+			System.out.println("TerminateWorker");
 		}
 	}
 }
